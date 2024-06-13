@@ -20,7 +20,7 @@ def client_receive():
 
 def client_send():
     while True:
-        message = f'{alias}: {input("")}'
+        message = f'{alias}: {input(">> ")}'
         client.send(message.encode("utf-8"))
 
 receive_thread = threading.Thread(target=client_receive)

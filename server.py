@@ -2,24 +2,34 @@ import socket
 import threading
 
 host = socket.gethostbyname(socket.gethostname())
-port = 55555
+port = 0
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((host, port))
+server_address = server.getsockname()
+print(f'Server is Running on {server_address[0]}:{server_address[1]}')
 server.listen()
 
 clients = []
 aliases = []
 
+
 def broadcast(message):
     for client in clients:
         client.send(message)
+
+def send_msg(client,message):
+    for user in clients:
+        if user != client:
+            user.send(message)
+
+
 
 def handle_client(client):
     while True:
         try:
             message = client.recv(1024)
-            broadcast(message)
+            send_msg(client,message)
         except:
             index = clients.index(client)
             clients.remove(client)
@@ -32,15 +42,22 @@ def handle_client(client):
 
 def receive():
     while True:
-        print("Server is running and listening ......")
+        print("Server is Listening ......")
         client, address = server.accept()
-        print(f"Connection established {str(address)}")
+        print(f"Connection established {address[0]}:{address[1]}")
+        
         client.send('alias?'.encode('utf-8'))
         alias = client.recv(1024)
+        alias=alias.decode('utf-8')
         aliases.append(alias)
-        clients.append(client)
-        print(f"The alias of the client is {alias}".encode('utf-8'))
+
         broadcast(f'{alias} has entered the chatroom ......'.encode('utf-8'))
+
+        clients.append(client)
+        print(f'alias : {alias}')
+        print('------------------------------------------------------------')
+        
+        
         client.send("You are now connected!".encode('utf-8'))
         thread = threading.Thread(target=handle_client, args=(client,))
         thread.start()
