@@ -14,16 +14,6 @@ server.listen()
 clients = []
 aliases = []
 
-'''
-def handle_msg(message,sender=None):
-    #handle the messages that are empty characters
-
-    while message != "":
-        sender.send('Please enter some characters!!\n'.encode('utf-8'))
-        message=sender.recv(1024).decode('utf-8')
-    
-    return message
-'''
 
 #handles sending messages to the clients
 def broadcast(message, sender=None):
@@ -59,7 +49,6 @@ def receive():
         print(f"Connection established {address[0]}:{address[1]}")
         
         client.send('alias?'.encode('utf-8'))
-        #alias = handle_msg(client.recv(1024).decode('utf-8'),client)
         alias = client.recv(1024).decode('utf-8')
         aliases.append(alias)
 
