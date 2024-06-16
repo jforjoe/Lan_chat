@@ -15,14 +15,46 @@ clients = []
 aliases = []
 
 
+
+
+def action(message, client):
+    
+    '''here the function excecutes the requirements for the client request
+    eg: exit'''
+
+    msg = message.decode('utf-8').split(' ')
+
+    if msg[-1] == 'quit_':
+        client.send('You have been disconnected !!!'.encode('utf-8'))
+
+
+
+        #Need to make this portion modular it is repeated ...( handle_client() )... gotta work on this later
+
+        index = clients.index(client)
+        clients.remove(client)
+        client.close()
+        alias = aliases[index]
+        broadcast(f'{alias} has left the chat !'.encode('utf-8'))
+        aliases.remove(alias)
+    
+    else:
+        pass
+
+
 #handles sending messages to the clients
 def broadcast(message, sender=None):
     
     '''we need to handle the handle the exception of 
     the client leaving the chatroom and hence the error'''
+
     for client in clients:
         if client != sender:
-            client.send(message)
+
+            try:
+                client.send(message)
+            except:
+                print(f'{client.getpeername()} disconnected during message brodcast !!!')
 
 
 
@@ -30,6 +62,9 @@ def handle_client(client):
     while True:
         try:
             message = client.recv(1024)
+
+            action(message,client)  # Suppose the client wants some things to be excecuted and the requirement can be from server side
+
             broadcast(message,sender=client)
         except:
             index = clients.index(client)
