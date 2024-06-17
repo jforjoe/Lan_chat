@@ -1,7 +1,16 @@
 import threading
 import socket
 
-
+def  get_default_gateway():
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.connect(('8.8.8.8',80))
+        ip = sock.getsockname()[0]
+        return ip
+    except socket.error:
+        return "127.0.0.1"
+    finally:
+        sock.close()
 def handle_msg(prompt):
     
     '''If the entered message is empty string, user is asked to 
@@ -41,7 +50,7 @@ def client_send():
 
 alias = handle_msg("Enter your username >>> ")
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('172.19.96.1', 55555))
+client.connect((get_default_gateway(), 55555))
 
 
 receive_thread = threading.Thread(target=client_receive)
