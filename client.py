@@ -1,7 +1,7 @@
 import threading
 import socket
 
-def  get_default_gateway():
+'''def  get_default_gateway():
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.connect(('8.8.8.8',80))
@@ -11,6 +11,8 @@ def  get_default_gateway():
         return "127.0.0.1"
     finally:
         sock.close()
+'''
+
 def handle_msg(prompt):
     
     '''If the entered message is empty string, user is asked to 
@@ -50,7 +52,10 @@ def client_send():
 
 alias = handle_msg("Enter your username >>> ")
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect((get_default_gateway(), 55555))
+
+''' Need to Work arund a way to get the server IP addresss
+fr time being and easier development purpose the IP is of the same host'''
+client.connect((socket.gethostbyname(socket.gethostname()), 55555))    
 
 
 receive_thread = threading.Thread(target=client_receive)
