@@ -1,65 +1,64 @@
 import threading
 import socket
 
-'''def  get_default_gateway():
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.connect(('8.8.8.8',80))
-        ip = sock.getsockname()[0]
-        return ip
-    except socket.error:
-        return "127.0.0.1"
-    finally:
-        sock.close()
-'''
-
-def handle_msg(prompt):
+class Chat_Client():
+    def __init__(self, host, port):
+        self.host=host
+        self.port=port
+        self.username=self.get_username()
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
-    '''If the entered message is empty string, user is asked to 
-    enter it again untill it has some character'''
-    
-    message = input(prompt)
-    while not message.strip():
-        print('Please enter some characters!!')
-        message = input(prompt)
-    return message
-
-
-def client_receive():
-
-    '''once connected to the server the server sends a request for the username!!
-    here we send the username to the server on request'''
-    
-    while True:
+    def connect(self):
         try:
-            message = client.recv(1024).decode()
-            if message == 'alias?':
-                client.send(alias.encode('utf-8'))
-            else:
-                print(message)
+            self.client_socket.connect((self.host, self.port))
+
+        
+            req = self.client_socket.recv(1024).decode('utf-8')
+            if req == 'alias?':
+                self.client_socket.send(self.username.encode('utf-8'))
+            
+            receive_thread = threading.Thread(target=self.receive_msg)
+            receive_thread.start()
+
+            self.send_msg()
+        
         except:
-            print("Error !!!")
-            client.close()
-            break
+            print("Failed to connect to server !!")
+        finally:
+            self.client_socket.close()
+
+    def get_username(self):
+        while True:
+            username = input("Enter your username >> ")
+            if not username.strip():
+                print("Username cannot be empty !!!")
+            else:
+                return username
+            
+    def receive_msg(self):
+        while True:
+            try:
+                message = self.client_socket.recv(1024).decode('utf-8')
+                if message:
+                    print(message)
+            except:
+                print("Connection lost with server!")
+                self.client_socket.close()
+                break
 
 
-def client_send():
-    while True:
-        message = handle_msg(">>")
-        client.send(f'{alias} : {message}'.encode("utf-8"))
+    def send_msg(self):
+        while True:
+            message=input(">>")
+            self.client_socket.send(f'{self.username} : {message}'.encode('utf-8'))
 
 
 
-alias = handle_msg("Enter your username >>> ")
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-''' Need to Work arund a way to get the server IP addresss
-fr time being and easier development purpose the IP is of the same host'''
-client.connect((socket.gethostbyname(socket.gethostname()), 55555))    
+host= socket.gethostbyname(socket.gethostname())
+port= 55555
+client = Chat_Client(host,port)
+client.connect()
 
 
-receive_thread = threading.Thread(target=client_receive)
-receive_thread.start()
 
-# Call the client_send function to allow the user to send messages
-client_send()
+
