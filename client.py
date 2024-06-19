@@ -43,7 +43,7 @@ class Chat_Client():
                     print(message)
             except:
                 print("Connection lost with server!")
-                client.close()
+                self.client_socket.close()
                 break
 
 
