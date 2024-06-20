@@ -52,15 +52,18 @@ class ChatServer:
         msg = message.decode('utf-8').split(' ')
         if msg[-1] == 'quit_':
             client.send('You have been disconnected !!!'.encode('utf-8'))
+            self.disconnect_client(client)
+            
 
     def disconnect_client(self, client):
         try:
             index = self.clients.index(client)
             alias = self.aliases[index]
-            self.broadcast(f'{alias} has left the chat !'.encode('utf-8'))
             self.clients.remove(client)
             self.aliases.remove(alias)
             client.close()
+            self.broadcast(f'{alias} has left the chat !'.encode('utf-8'))
+            
 
             # Notify client via UDP
             udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
