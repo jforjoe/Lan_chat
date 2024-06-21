@@ -41,18 +41,23 @@ class ChatServer:
                     break  # If message is empty, client has disconnected
 
                 self.action(message, client)
-                self.broadcast(message, sender=client)
+                
+                #self.broadcast(message, sender=client)
+            
             except Exception as e:
                 print(f"Exception occurred in handle_client: {e}")
                 break
 
-        self.disconnect_client(client)
 
     def action(self, message, client):
         msg = message.decode('utf-8').split(' ')
         if msg[-1] == 'quit_':
             client.send('You have been disconnected !!!'.encode('utf-8'))
             self.disconnect_client(client)
+        
+        else:
+            self.broadcast(message, sender=client)
+
             
 
     def disconnect_client(self, client):
@@ -63,14 +68,6 @@ class ChatServer:
             self.aliases.remove(alias)
             client.close()
             self.broadcast(f'{alias} has left the chat !'.encode('utf-8'))
-            
-
-            # Notify client via UDP
-            udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            client_address = client.getpeername()  # Get client's address
-            disconnect_message = 'You have been disconnected from the chat server.'.encode('utf-8')
-            udp_socket.sendto(disconnect_message, client_address)
-            udp_socket.close()
 
         except ValueError:
             pass  # Handle case where client not found in list
