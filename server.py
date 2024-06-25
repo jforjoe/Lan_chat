@@ -36,17 +36,18 @@ class ChatServer:
     def handle_client(self, client):
         while True:
             try:
-                message = client.recv(1024)
-                if not message:
-                    break  # If message is empty, client has disconnected
+                if client in self.clients:
+                    message = client.recv(1024)
+                    if not message:
+                        break  # If message is empty, client has disconnected
 
-                self.action(message, client)
-                
-                #self.broadcast(message, sender=client)
+                    self.action(message, client)
             
             except Exception as e:
                 print(f"Exception occurred in handle_client: {e}")
                 break
+        
+        self.disconnect_client(client)
 
 
     def action(self, message, client):
@@ -68,9 +69,12 @@ class ChatServer:
             self.aliases.remove(alias)
             client.close()
             self.broadcast(f'{alias} has left the chat !'.encode('utf-8'))
+            print(f'{alias} has disconnected !!')
+            print('------------------------------------------------------------')
 
         except ValueError:
             pass  # Handle case where client not found in list
+
 
     def broadcast(self, message, sender=None):
         for cl in self.clients:
@@ -79,6 +83,7 @@ class ChatServer:
                     cl.send(message)
                 except Exception as e:
                     print(f"Error broadcasting message to {cl.getpeername()}: {e}")
+                    self.disconnect_client(cl)
 
 if __name__ == "__main__":
     #host = socket.gethostbyname(socket.gethostname())
