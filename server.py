@@ -81,8 +81,9 @@ class ChatServer:
                     print(f"Error broadcasting message to {cl.getpeername()}: {e}")
 
 if __name__ == "__main__":
-    host = socket.gethostbyname(socket.gethostname())
-    port = 55555  # Adjust this port as needed
+    #host = socket.gethostbyname(socket.gethostname())
+    host = '0.0.0.0'   # accepts any ip address that connects to this server
+    port = 8080  # Adjust this port as needed
 
     server = ChatServer(host, port)
     server.start()
