@@ -46,7 +46,7 @@ class Chat_Client():
 
     def send_msg(self):
         while True:
-            message = input(">>")
+            message = input("")
             self.client_socket.send(f'{self.username} : {message}'.encode('utf-8'))
 
 host = '192.168.182.107'  # Use the IP address of your server
