@@ -49,13 +49,13 @@ class Chat_Client():
 
     def send_msg(self):
         while True:
-            message=input(">>")
+            message=input("")
             self.client_socket.send(f'{self.username} : {message}'.encode('utf-8'))
 
 
 
 host= socket.gethostbyname(socket.gethostname())
-port= 55555
+port= 8080
 client = Chat_Client(host,port)
 client.connect()
 
