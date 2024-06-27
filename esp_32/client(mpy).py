@@ -1,5 +1,7 @@
 import usocket as socket
 import _thread
+from machine import Pin, SoftI2C
+import ssd1306
 
 class Chat_Client():
     def __init__(self, host, port):
@@ -7,6 +9,26 @@ class Chat_Client():
         self.port = port
         self.username = self.get_username()
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+
+
+        #Initializing the display
+        self.i2c = SoftI2C(sda=Pin(21),scl=Pin(22))
+        self.display = ssd1306.SSD1306_I2C(128,32, self.i2c)
+        self.display.show()
+        self.line = 0
+
+
+    def update_display(self,message):
+        self.display.fill(0)
+        self.display.text(message, 0, self.line, 1)
+        self.display.show()
+        self.line += 10         #  Move to the next line
+        if self.line >= 32:     # If out of display lines, reset to top
+            self.line = 0
+
+
+
     
     def connect(self):
         try:
@@ -22,6 +44,7 @@ class Chat_Client():
         
         except Exception as e:
             print(f'Connection failed: {e}')
+
         finally:
             self.client_socket.close()
 
@@ -39,6 +62,7 @@ class Chat_Client():
                 message = self.client_socket.recv(1024).decode('utf-8')
                 if message:
                     print(message)
+                    self.update_display(message)
             except:
                 print("Connection lost with server!")
                 self.client_socket.close()
