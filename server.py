@@ -69,6 +69,7 @@ class ChatServer:
             self.aliases.remove(alias)
             client.close()
             self.broadcast(f'{alias} has left the chat !'.encode('utf-8'))
+            print('------------------------------------------------------------')
             print(f'{alias} has disconnected !!')
             print('------------------------------------------------------------')
 
