@@ -1,4 +1,6 @@
 from machine import Pin, SoftI2C
+import time
+import _thread
 import ssd1306
 
 class Display():
@@ -15,9 +17,12 @@ class Display():
         self.max_lines = 3  # Number of lines that can fit on the display
         self.line = 0  # Current line for displaying messages
 
+    # Initializing pages
+        self.current_page = 0
+        self.pages = []
 
 
-    def update_display(self, message):
+    def update_display(self):
         self.display.fill(0)
         start_line = max(0, len(self.message_buffer) - self.max_lines)
 
@@ -27,8 +32,8 @@ class Display():
         self.display.show()
 
         # Handle line wrapping and reset if needed
-        if len(message) > 12:  # Adjust based on your display character width
-            wrapped_lines = self.wrap_text(message, 12)  # Replace 12 with your character width
+        if len(self.message_buffer[-1]) > 12:  # Adjust based on your display character width
+            wrapped_lines = self.wrap_text(self.message_buffer[-1], 12)  # Replace 12 with your character width
             for line in wrapped_lines:
                 self.display.text(line, 0, self.line, 1)
                 self.line += 10
@@ -62,9 +67,68 @@ class Display():
         if len(self.message_buffer) > 100:
             self.message_buffer.pop(0)  # Remove oldest message
 
-        self.update_display(message)
+        #self.update_display(message)  # when pages are not dealt with uncomment this ....
+        self.update_pages()
+        self.show_current_page()
+
+        # Start the update loop in a new thread
+        _thread.start_new_thread(self.update_display_loop, ())
 
 
+######################################################################################################
+######################################################################################################
+##      _________________HANDLING PAGES OF MESSAGES________________________ 
+
+    def update_pages(self):
+        self.pages = []
+        current_page = []
+        for message in self.message_buffer:
+            current_page.append(message)
+            if len(current_page) == self.max_lines:
+                self.pages.append(current_page)
+                current_page = []
+        if current_page:
+            self.pages.append(current_page)
+
+
+
+    def show_current_page(self):
+        self.display.fill(0)
+        # Check if there are any pages
+        if not self.pages:
+            self.display.text("No messages yet!", 0, 0, 1)
+            self.display.show()
+            return
+
+        # Handle empty pages within the current page range
+        while not self.pages[self.current_page]:
+            self.current_page += 1  # Move to next page (if not empty)
+            if self.current_page >= len(self.pages):
+                self.current_page = len(self.pages) - 1  # Clamp to last page
+                break  # Exit loop if all pages are empty
+
+        # Display messages from the current page
+        for i, message in enumerate(self.pages[self.current_page]):
+            self.display.text(message[:16], 0, i * 10, 1)  # Truncate to 16 characters
+        self.display.show()
+
+
+
+    def update_display_loop(self):
+        while True:
+            self.update_display()
+            time.sleep(0.5)  # Adjust the sleep time as needed
+
+
+    def next_page(self):
+        if self.current_page < len(self.pages) - 1:
+            self.current_page += 1
+            self.show_current_page()
+
+    def prev_page(self):
+        if self.current_page > 0:
+            self.current_page -= 1
+            self.show_current_page()
 
 
 
