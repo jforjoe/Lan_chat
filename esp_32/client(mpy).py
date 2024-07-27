@@ -1,6 +1,7 @@
 import usocket as socket
 import _thread
 from display import Display
+from machine import Pin
 
 class Chat_Client():
     def __init__(self, host, port):
@@ -11,9 +12,38 @@ class Chat_Client():
 
         #Initializing the display
         self.display = Display()
-        
 
+        #Initializing Buttons
+        self.left_button = Pin(4, Pin.IN, Pin.PULL_UP)
+        self.right_button = Pin(15, Pin.IN, Pin.PULL_UP)
     
+        #Button Interrupts
+        self.left_button.irq(trigger=Pin.IRQ_FALLING, handler=self.left_button_pressed)
+        self.right_button.irq(trigger=Pin.IRQ_FALLING, handler=self.right_button_pressed)
+
+
+
+    def get_username(self):
+        while True:
+            username = input("Enter your username >> ")
+            if not username.strip():
+                print("Username cannot be empty !!!")
+            else:
+                return username
+
+
+
+    def left_button_pressed(self, pin):
+            self.display.prev_page()
+            print('D')
+
+
+    def right_button_pressed(self, pin):
+            self.display.next_page()
+            print('U')
+
+
+
     def connect(self):
         try:
             self.client_socket.connect((self.host, self.port))
@@ -34,13 +64,7 @@ class Chat_Client():
 
 
 
-    def get_username(self):
-        while True:
-            username = input("Enter your username >> ")
-            if not username.strip():
-                print("Username cannot be empty !!!")
-            else:
-                return username
+    
             
     def receive_msg(self):
         while True:
@@ -59,7 +83,7 @@ class Chat_Client():
             message = input("")
             self.client_socket.send(f'{self.username} : {message}'.encode('utf-8'))
 
-host = '192.168.120.107'  # Use the IP address of your server
+host = '192.168.73.107'  # Use the IP address of your server
 port = 8080
 client = Chat_Client(host, port)
 client.connect()
